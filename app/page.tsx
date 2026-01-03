@@ -144,7 +144,7 @@ const footerLinks = [
 ];
 
 const socialLinksFooter = [
-  { icon: Facebook, label: "Facebook", href: "#" },
+  { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/share/1BBoXkoDhz/" },
 ];
 
 const features = [
