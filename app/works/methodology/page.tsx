@@ -430,7 +430,29 @@ export default function HeroBlock() {
 
     return (
         <>
+            <nav className="w-full bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-50">
+                <div className="mx-auto max-w-7xl px-6 py-3 flex justify-between items-center">
+                    <div className="text-lg font-semibold text-foreground">
+                        Leroux Y Xchire
+                    </div>
+                    <div className="flex space-x-6">
+                        <Link
+                            href="/"
+                            className="text-sm font-medium text-muted-foreground hover:text-primary transition"
+                        >
+                            Home
+                        </Link>
+                        <Link
+                            href="/me/about"
+                            className="text-sm font-medium text-muted-foreground hover:text-primary transition"
+                        >
+                            About
+                        </Link>
+                    </div>
+                </div>
+            </nav>
             <div className="relative w-full overflow-hidden rounded-2xl border border-border/40 bg-background/60 backdrop-blur p-4 sm:p-6">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:28px_28px] z-0" />
                 {/* Role Hierarchy */}
                 <div className="relative w-full overflow-hidden rounded-2xl border border-border/40 bg-background/60 backdrop-blur p-4 sm:p-6">
                     {/* Methodology Workflow */}
@@ -447,7 +469,11 @@ export default function HeroBlock() {
                 aria-labelledby="footer-heading"
                 className="relative w-full overflow-hidden border-t border-border bg-card/90 backdrop-blur-xl"
             >
-                <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+                {/* Background gradient div: lowest layer */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:28px_28px] z-0" />
+
+                {/* Blur and colored motion divs */}
+                <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
                     <motion.div
                         className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary/20 blur-[160px]"
                         animate={
@@ -475,11 +501,15 @@ export default function HeroBlock() {
                         }
                     />
                 </div>
+
                 <h2 id="footer-heading" className="sr-only">
                     Site footer
                 </h2>
                 {/* Main Footer Content */}
-                <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                <div
+                    id="footer-heading"
+                    className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 relative z-10"
+                >
                     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
                         {/* Brand & Newsletter */}
                         <motion.div
