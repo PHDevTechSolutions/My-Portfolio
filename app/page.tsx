@@ -477,7 +477,7 @@ export default function HeroBlock() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:28px_28px]" />
 
         <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-4 md:grid-cols-12 sm:grid-cols-3 grid-cols-4 justify-items-center">
+          <div className="grid gap-6 grid-cols-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 justify-items-center">
             {features.map((feature, index) => {
               const filename = feature.image
                 .split("/")
@@ -487,7 +487,7 @@ export default function HeroBlock() {
               return (
                 <Card
                   key={index}
-                  className="group relative cursor-pointer border border-gray-300 bg-white p-4 w-24 h-24 flex flex-col items-center justify-center rounded-xl transition-all duration-500 hover:border-primary"
+                  className="group relative cursor-pointer border border-gray-300 bg-white p-4 w-full max-w-[96px] aspect-square flex flex-col items-center justify-center rounded-xl transition-all duration-500 hover:border-primary"
                 >
                   <div className="relative h-14 w-14 mb-2">
                     <Image
@@ -499,7 +499,6 @@ export default function HeroBlock() {
                     />
                   </div>
 
-                  {/* Badge as hover label */}
                   <Badge
                     className="absolute bottom-2 left-1/2 hidden max-w-[90%] -translate-x-1/2 whitespace-nowrap px-2 py-2 text-xs font-medium transition-all duration-300 group-hover:block uppercase"
                   >
@@ -509,9 +508,9 @@ export default function HeroBlock() {
               );
             })}
           </div>
-
         </div>
       </section>
+
 
       {/* Skill Section */}
       <section className="relative min-h-screen w-full overflow-hidden bg-neutral-950 text-neutral-100">
