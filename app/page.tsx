@@ -475,7 +475,7 @@ export default function HeroBlock() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:28px_28px]" />
 
         <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-2 md:grid-cols-12 sm:grid-cols-3 grid-cols-4 justify-items-center">
+          <div className="grid gap-4 md:grid-cols-12 sm:grid-cols-3 grid-cols-4 justify-items-center">
             {features.map((feature, index) => {
               const filename = feature.image
                 .split("/")

@@ -127,8 +127,6 @@ const footerLinks = [
         links: [
             { label: "Main", href: "/" },
             { label: "About Me", href: "/me/about" },
-            { label: "Experience", href: "/me/experience" },
-            { label: "Certificates", href: "/me/certificates" },
         ],
     },
     {
