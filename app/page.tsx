@@ -23,7 +23,8 @@ import {
   Facebook,
   MapPin,
   Phone,
-  Sparkles
+  Sparkles,
+  Briefcase
 } from "lucide-react";
 import {
   Dialog,
@@ -41,7 +42,8 @@ import { Card } from "@/components/ui/card";
 
 const socialLinks = [
   { icon: Github, href: "https://github.com/PHDevTechSolutions/", label: "GitHub" },
-  { icon: Linkedin, href: "https://www.linkedin.com/in/liesther-roluna-378a522b5/", label: "LinkedIn" }
+  { icon: Linkedin, href: "https://www.linkedin.com/in/liesther-roluna-378a522b5/", label: "LinkedIn" },
+{ icon: Briefcase, href: "https://www.behance.net/liestherroluna13?fbclid=IwdGRjcAPGEixjbGNrA8YRmWV4dG4DYWVtAjExAHNydGMGYXBwX2lkDDM1MDY4NTUzMTcyOAABHgdfGj8kcR2LqGemiNPRJ-k4PdFVDXQ7Tv4i0w5bNFcFZEYBFZt90DhRdyIO_aem_uODVXXorD36BUCVWL_SKJQ", label: "Behance" }
 ];
 
 const services = [
