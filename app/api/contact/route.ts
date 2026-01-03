@@ -1,18 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import path from "path";
 
-/**
- * ✅ REQUIRED FOR NODEMAILER ON VERCEL
- * Prevents Edge runtime crashes
- */
 export const runtime = "nodejs";
-
-/**
- * ✅ VERCEL-SAFE ABSOLUTE PATH
- * (public/ is NOT available via relative paths in serverless)
- */
-const LOGO_PATH = path.join(process.cwd(), "public", "images", "vah-logo-2.png");
 
 export async function POST(req: Request) {
   try {
@@ -36,9 +25,12 @@ export async function POST(req: Request) {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
 
-    // Dark mode CSS for email
+
     const darkCSS = `
       @media (prefers-color-scheme: dark) {
         body {
@@ -57,7 +49,6 @@ export async function POST(req: Request) {
       }
     `;
 
-    // Email preheader (hidden text)
     const preheader = `
       <span style="
         display:none;
@@ -72,7 +63,6 @@ export async function POST(req: Request) {
       </span>
     `;
 
-    // Reusable email template wrapper
     const EmailCard = (content: string) => `
       ${preheader}
       <html>
@@ -90,11 +80,6 @@ export async function POST(req: Request) {
           box-shadow:0 4px 14px rgba(0,0,0,0.08);
         ">
 
-          <!-- Logo -->
-          <div style="text-align:center; margin-bottom:28px;">
-            <img src="cid:vah-logo-2" style="width:150px;" />
-          </div>
-
           <!-- Main Content -->
           ${content}
 
@@ -103,9 +88,7 @@ export async function POST(req: Request) {
 
           <!-- Footer -->
           <div class="footer" style="font-size:12px; color:#777; text-align:center; line-height:18px;">
-            © 2025 Value Acquisitions Holdings Inc. All rights reserved.<br />
-            Block 14, Brgy. Golden Mile Business Park,<br />
-            Lot 110TH Street, Maduya, Carmona, 4116 Cavite
+            © 2025 Personal Portfolio. All rights reserved.
           </div>
 
         </div>
@@ -114,7 +97,6 @@ export async function POST(req: Request) {
       </html>
     `;
 
-    // Admin email content
     const adminContent = `
       <h2 style="margin:0 0 16px; font-size:22px;">New Website Inquiry</h2>
       <p style="line-height:24px; font-size:15px;">
@@ -132,60 +114,44 @@ export async function POST(req: Request) {
       <p style="white-space:pre-line; margin-top:4px;">${message || "N/A"}</p>
     `;
 
-    // Auto-reply email content to user
     const userContent = `
       <h2 style="margin:0 0 16px; font-size:22px; text-align:center;">
-        Thank You for Contacting Us
+        Thank You for Contacting Me
       </h2>
 
       <p style="font-size:15px; line-height:24px;">
         Hi <strong>${fullName}</strong>,<br><br>
-        Thank you for reaching out to
-        <strong>Value Acquisitions Holdings Inc.</strong>.
-        We have successfully received your inquiry and a member of our team
-        will respond shortly.
+        Thank you for reaching out to my personal portfolio.
+        I have successfully received your inquiry and will respond shortly.
       </p>
+
       <p style="font-size:15px; line-height:24px;">
         Best regards,<br />
-        <strong>Value Acquisitions Holdings Inc.</strong>
+        <strong>Your Name</strong>
       </p>
     `;
 
-    // Send admin notification email
+    // Send admin email
     await transporter.sendMail({
-      from: `"Value Acquisitions Holdings Inc." <${process.env.EMAIL_USER}>`,
-      to: "valueacquisitionsholdings@gmail.com",
-      subject: `📩 New Website Inquiry — ${fullName}`,
-      attachments: [
-        {
-          filename: "vah-logo-2.png",
-          path: LOGO_PATH,
-          cid: "vah-logo-2",
-        },
-      ],
+      from: `"Personal Portfolio" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_USER, // You receive the email here
+      subject: `📩 New Message — ${fullName}`,
       html: EmailCard(adminContent),
     });
 
-    // Send auto-reply to user
+    // Send auto-reply email
     await transporter.sendMail({
-      from: `"Value Acquisitions Holdings Inc." <${process.env.EMAIL_USER}>`,
+      from: `"Personal Portfolio" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: `Thank You for Your Inquiry — Value Acquisitions Holdings Inc.`,
-      attachments: [
-        {
-          filename: "vah-logo-2.png",
-          path: LOGO_PATH,
-          cid: "vah-logo-2",
-        },
-      ],
+      subject: `Thank You for Your Inquiry`,
       html: EmailCard(userContent),
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error("EMAIL ERROR:", error);
     return NextResponse.json(
-      { error: "Failed to send message. Please try again later." },
+      { error: error.message || "Failed to send message. Please try again later." },
       { status: 500 }
     );
   }

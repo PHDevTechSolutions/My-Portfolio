@@ -223,7 +223,6 @@ const features = [
 ];
 
 export default function HeroBlock() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     company: "",
@@ -232,6 +231,8 @@ export default function HeroBlock() {
     subject: "",
     message: "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -248,6 +249,7 @@ export default function HeroBlock() {
         const data = await res.json();
         throw new Error(data.error || "Failed to send message");
       }
+
       toast.success("✅ Your message has been sent!");
       setFormData({
         fullName: "",
