@@ -148,7 +148,7 @@ const footerLinks = [
 ];
 
 const socialLinksFooter = [
-    { icon: Facebook, label: "Facebook", href: "#" },
+    { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/share/1BBoXkoDhz/" },
 ];
 
 function WebsiteCard({ title, description, tags, image, links, develop, assign, className }: WebsiteCardProps) {
