@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { getProjects, type ProjectData } from "@/lib/firestore";
 
 interface WebsiteCardProps {
     title: string;
@@ -59,7 +60,7 @@ const cardVariants: Variants = {
     },
 };
 
-const defaultProjects: WebsiteCardProps[] = [
+const fallbackProjects: WebsiteCardProps[] = [
     {
         title: "Ecoshift Corporation",
         description:
@@ -70,12 +71,12 @@ const defaultProjects: WebsiteCardProps[] = [
             "Elementor",
             "CPanel Godaddy",
         ],
-        image: "/website/ecoshift.png",  // changed to ecoshift image
+        image: "/website/ecoshift.png",
         develop: "Leroux Y Xchire",
         assign: "Leroux Y Xchire",
         links: {
             demo: "https://www.ecoshiftcorp.com/",
-            github: "#",  // updated repo
+            github: "#",
         },
     },
     {
@@ -88,15 +89,14 @@ const defaultProjects: WebsiteCardProps[] = [
             "Elementor",
             "CPanel A2Hosting",
         ],
-        image: "/website/disruptive.png", // Add the correct image path here
+        image: "/website/disruptive.png",
         develop: "Leroux Y Xchire",
         assign: "Jason Pablo",
         links: {
-            demo: "https://disruptivesolutionsinc.com/", // Replace with actual demo URL
-            github: "#", // Replace with actual repo URL
+            demo: "https://disruptivesolutionsinc.com/",
+            github: "#",
         },
     },
-
     {
         title: "Value Acquisition Holdings",
         description:
@@ -111,26 +111,25 @@ const defaultProjects: WebsiteCardProps[] = [
             "MongoDB",
             "Vercel",
         ],
-        image: "/website/vah.png", // Update with actual image path
+        image: "/website/vah.png",
         develop: "Leroux Y Xchire",
         assign: "Aries Balgos",
         links: {
-            demo: "https://vah-industrial.vercel.app/", // Update with real demo URL
-            github: "https://github.com/PHDevTechSolutions/VAH-Website", // Update with real repo URL
+            demo: "https://vah-industrial.vercel.app/",
+            github: "https://github.com/PHDevTechSolutions/VAH-Website",
         },
     },
-
     {
         title: "Ecoshift Corporation ( Shopify )",
         description:
             "Your go-to shop for lighting solutions powered by Shopify.",
         tags: ["Shopify"],
-        image: "/website/shopify.png", // Update with actual image path if needed
+        image: "/website/shopify.png",
         develop: "Leroux Y Xchire",
         assign: "Leroux Y Xchire",
         links: {
-            demo: "https://eshome.ph/", // Update with real demo URL
-            github: "#", // Update with real repo URL if applicable
+            demo: "https://eshome.ph/",
+            github: "#",
         },
     },
 ];
@@ -163,6 +162,18 @@ const footerLinks = [
 const socialLinksFooter = [
     { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/share/1BBoXkoDhz/" },
 ];
+
+function toCardProps(p: ProjectData): WebsiteCardProps {
+    return {
+        title: p.title,
+        description: p.description,
+        tags: p.tags,
+        image: p.image,
+        develop: p.develop,
+        assign: p.assign,
+        links: { demo: p.demoUrl || undefined, github: p.githubUrl || undefined },
+    };
+}
 
 function WebsiteCard({ title, description, tags, image, links, develop, assign, className }: WebsiteCardProps) {
     return (
@@ -248,6 +259,21 @@ function WebsiteCard({ title, description, tags, image, links, develop, assign, 
 
 export default function ProjectPage() {
     const shouldReduceMotion = useReducedMotion();
+    const [projects, setProjects] = useState<WebsiteCardProps[]>(fallbackProjects);
+
+    useEffect(() => {
+        let cancelled = false;
+        getProjects("websiteDevelopment")
+            .then((data) => {
+                if (!cancelled && data.length > 0) {
+                    setProjects(data.map(toCardProps));
+                }
+            })
+            .catch(() => {
+                // Keep fallback projects on error
+            });
+        return () => { cancelled = true; };
+    }, []);
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -281,14 +307,13 @@ export default function ProjectPage() {
                 role="main"
                 aria-label="About us"
             >
-                {/* Example usage of ProjectCard with default project data */}
                 <motion.div
                     initial="hidden"
                     animate="visible"
                     variants={pageVariants}
                     className="flex flex-wrap justify-center gap-8 p-8"
                 >
-                    {defaultProjects.map((project, idx) => (
+                    {projects.map((project, idx) => (
                         <WebsiteCard key={idx} {...project} />
                     ))}
                 </motion.div>
@@ -297,10 +322,8 @@ export default function ProjectPage() {
                     aria-labelledby="footer-heading"
                     className="relative w-full overflow-hidden border-t border-border bg-card/90 backdrop-blur-xl"
                 >
-                    {/* Background gradient div: lowest layer */}
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000005_1px,transparent_1px),linear-gradient(to_bottom,#00000005_1px,transparent_1px)] bg-[size:28px_28px] z-0" />
 
-                    {/* Blur and colored motion divs */}
                     <div aria-hidden className="pointer-events-none absolute inset-0 z-0">
                         <motion.div
                             className="absolute -top-32 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-primary/20 blur-[160px]"
@@ -333,13 +356,10 @@ export default function ProjectPage() {
                     <h2 id="footer-heading" className="sr-only">
                         Site footer
                     </h2>
-                    {/* Main Footer Content */}
                     <div
-                        id="footer-heading"
                         className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 relative z-10"
                     >
                         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
-                            {/* Brand & Newsletter */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
@@ -363,10 +383,9 @@ export default function ProjectPage() {
                                     </Badge>
                                 </motion.div>
                                 <p className="mb-4 max-w-md text-sm text-muted-foreground">
-                                    Let’s build modern, efficient systems and websites together.
+                                    Let&apos;s build modern, efficient systems and websites together.
                                 </p>
 
-                                {/* Contact Info */}
                                 <div className="space-y-2 text-sm text-muted-foreground">
                                     <motion.div
                                         whileHover={shouldReduceMotion ? undefined : { x: 5 }}
@@ -392,7 +411,6 @@ export default function ProjectPage() {
                                 </div>
                             </motion.div>
 
-                            {/* Footer Links */}
                             {footerLinks.map((section, sectionIndex) => (
                                 <motion.div
                                     key={section.title}
@@ -435,7 +453,6 @@ export default function ProjectPage() {
                             ))}
                         </div>
 
-                        {/* Divider */}
                         <motion.div
                             initial={{ scaleX: 0 }}
                             whileInView={{ scaleX: 1 }}
@@ -444,9 +461,7 @@ export default function ProjectPage() {
                             className="my-10 h-px bg-border/70"
                         />
 
-                        {/* Bottom Bar */}
                         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-                            {/* Social Links */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 whileInView={{ opacity: 1 }}
@@ -483,7 +498,6 @@ export default function ProjectPage() {
                                 ))}
                             </motion.div>
 
-                            {/* Copyright */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 whileInView={{ opacity: 1 }}
@@ -499,7 +513,6 @@ export default function ProjectPage() {
                                 </Badge>
                             </motion.div>
 
-                            {/* Scroll to Top */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 whileInView={{ opacity: 1 }}
