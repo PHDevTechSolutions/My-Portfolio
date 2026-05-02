@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,18 @@ import {
     Phone,
     Mail,
     ArrowUp,
+    Loader2,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { Project, getProjectsByType } from "@/lib/firebase-service";
 
 interface WebsiteCardProps {
+    id?: string;
     title: string;
     description: string;
     tags: string[];
-    image: string;
+    image?: string;
     develop: string;
     assign: string;
     links?: {
@@ -164,27 +167,33 @@ const socialLinksFooter = [
     { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/share/1BBoXkoDhz/" },
 ];
 
-function WebsiteCard({ title, description, tags, image, links, develop, assign, className }: WebsiteCardProps) {
+function WebsiteCard({ id, title, description, tags, image, links, develop, assign, className }: WebsiteCardProps) {
     return (
         <motion.div variants={cardVariants} className={cn("w-full max-w-[400px]", className)}>
-            <Card className="group relative h-full overflow-hidden rounded-2xl border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10">
-                <div className="relative aspect-video overflow-hidden rounded-t-2xl">
+            <Card className="group relative h-full overflow-hidden rounded-none border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10">
+                <div className="relative aspect-video overflow-hidden">
                     <motion.div
                         className="relative h-full w-full"
                         whileHover={{ scale: 1.1 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Image
-                            src={image}
-                            alt={title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 400px) 100vw, 400px"
-                            priority
-                        />
+                        {image ? (
+                            <Image
+                                src={image}
+                                alt={title}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 400px) 100vw, 400px"
+                                priority
+                            />
+                        ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-white/5">
+                                <span className="text-gray-500 text-sm">No Image</span>
+                            </div>
+                        )}
                     </motion.div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                     <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                         {links?.demo && (
@@ -192,7 +201,7 @@ function WebsiteCard({ title, description, tags, image, links, develop, assign, 
                                 href={links.demo}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25 backdrop-blur-md"
+                                className="flex h-10 w-10 items-center justify-center bg-white text-black shadow-lg backdrop-blur-md"
                                 title="View Demo"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -205,7 +214,7 @@ function WebsiteCard({ title, description, tags, image, links, develop, assign, 
                                 href={links.github}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg backdrop-blur-md"
+                                className="flex h-10 w-10 items-center justify-center bg-white/20 text-white shadow-lg backdrop-blur-md"
                                 title="View Code"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -216,30 +225,35 @@ function WebsiteCard({ title, description, tags, image, links, develop, assign, 
                     </div>
                 </div>
                 <div className="p-5">
-                    <h3 className="mb-2 text-xl font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                    <h3 className="mb-2 text-xl font-semibold tracking-tight text-white transition-colors group-hover:text-gray-300">
                         {title}
                     </h3>
-                    <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">{description}</p>
+                    <p className="mb-4 line-clamp-2 text-sm text-gray-400">{description}</p>
                     <div className="flex flex-wrap gap-2">
                         {tags.map((tag, idx) => (
-                            <Badge
+                            <span
                                 key={idx}
-                                variant="secondary"
-                                className="bg-secondary/50 px-2 py-0.5 text-xs font-normal hover:bg-secondary"
+                                className="inline-block px-2 py-0.5 text-xs font-normal border border-white/20 text-gray-300 transform -skew-x-12"
                             >
-                                {tag}
-                            </Badge>
+                                <span className="transform skew-x-12 inline-block">{tag}</span>
+                            </span>
                         ))}
                     </div>
                     <div className="flex gap-2 mt-4 flex-wrap">
-                        <Badge className="text-xs p-2 whitespace-nowrap">
-                            Developed by: {develop}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs p-2 whitespace-nowrap">
-                            Assigned to: {assign}
-                        </Badge>
+                        <span className="inline-block px-3 py-1.5 text-xs font-semibold bg-white text-black transform -skew-x-12">
+                            <span className="transform skew-x-12 inline-block">Dev: {develop}</span>
+                        </span>
+                        <span className="inline-block px-3 py-1.5 text-xs font-semibold border border-white/30 text-white/80 transform -skew-x-12">
+                            <span className="transform skew-x-12 inline-block">Assign: {assign}</span>
+                        </span>
                     </div>
-
+                    {/* View Info Button */}
+                    <Link href={id ? `/projects/website-development/${id}` : '#'} className="block mt-4">
+                        <Button className="w-full gap-2 bg-white text-black hover:bg-gray-200 rounded-none text-xs">
+                            <ExternalLink className="h-4 w-4" />
+                            View Info
+                        </Button>
+                    </Link>
                 </div>
             </Card>
         </motion.div>
@@ -248,6 +262,33 @@ function WebsiteCard({ title, description, tags, image, links, develop, assign, 
 
 export default function ProjectPage() {
     const shouldReduceMotion = useReducedMotion();
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchProjects = async () => {
+            try {
+                setLoading(true);
+                const data = await getProjectsByType("website");
+                // If no Firebase data, use defaultProjects as fallback
+                if (data.length === 0) {
+                    setProjects(defaultProjects as Project[]);
+                } else {
+                    setProjects(data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch projects:", err);
+                setError("Failed to load projects from database");
+                // Fallback to defaultProjects on error
+                setProjects(defaultProjects as Project[]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProjects();
+    }, []);
 
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -255,43 +296,65 @@ export default function ProjectPage() {
 
     return (
         <>
-            <nav className="w-full bg-card/90 backdrop-blur-md border-b border-border sticky top-0 z-50">
-                <div className="mx-auto max-w-7xl px-6 py-3 flex justify-between items-center">
-                    <div className="text-lg font-semibold text-foreground">
+            <nav className="w-full bg-black/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
+                <div className="mx-auto max-w-7xl px-6 py-4 flex justify-between items-center">
+                    <div className="text-xl font-bold tracking-tight text-white">
                         Leroux Y Xchire
                     </div>
-                    <div className="flex space-x-6">
+                    <div className="flex space-x-2 items-center">
                         <Link
                             href="/"
-                            className="text-sm font-medium text-muted-foreground hover:text-primary transition"
+                            className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors transform -skew-x-12"
                         >
-                            Home
+                            <span className="transform skew-x-12 inline-block">Home</span>
                         </Link>
                         <Link
                             href="/me/about"
-                            className="text-sm font-medium text-muted-foreground hover:text-primary transition"
+                            className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors transform -skew-x-12"
                         >
-                            About
+                            <span className="transform skew-x-12 inline-block">About</span>
+                        </Link>
+                        <Link
+                            href="/projects/website-development"
+                            className="px-4 py-2 text-sm font-bold bg-white text-black transform -skew-x-12"
+                        >
+                            <span className="transform skew-x-12 inline-block">Projects</span>
                         </Link>
                     </div>
                 </div>
             </nav>
             <main
-                className="relative min-h-screen overflow-hidden bg-background text-foreground"
+                className="relative min-h-screen overflow-hidden bg-[#0a0a0a] text-white"
                 role="main"
-                aria-label="About us"
+                aria-label="Website Development Projects"
             >
-                {/* Example usage of ProjectCard with default project data */}
-                <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={pageVariants}
-                    className="flex flex-wrap justify-center gap-8 p-8"
-                >
-                    {defaultProjects.map((project, idx) => (
-                        <WebsiteCard key={idx} {...project} />
-                    ))}
-                </motion.div>
+                {/* Loading State */}
+                {loading && (
+                    <div className="flex h-96 items-center justify-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-white" />
+                    </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                    <div className="flex h-96 items-center justify-center">
+                        <p className="text-gray-400">{error} (Showing cached projects)</p>
+                    </div>
+                )}
+
+                {/* Projects Grid */}
+                {!loading && (
+                    <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        variants={pageVariants}
+                        className="flex flex-wrap justify-center gap-8 p-8"
+                    >
+                        {projects.map((project, idx) => (
+                            <WebsiteCard key={project.id || idx} {...project} />
+                        ))}
+                    </motion.div>
+                )}
 
                 <footer
                     aria-labelledby="footer-heading"
