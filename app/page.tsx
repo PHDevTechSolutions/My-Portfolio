@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -24,15 +24,23 @@ import {
   MapPin,
   Phone,
   Sparkles,
-  Briefcase
+  Briefcase,
+  Download,
+  Eye,
+  X,
+  FileText,
+  Award,
+  Globe,
+  HeartHandshake,
+  User,
+  Target,
+  Calendar,
+  Building2,
+  Star,
+  Clock,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { getProjectsByType } from "@/lib/firebase-service";
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,8 +51,82 @@ import { Card } from "@/components/ui/card";
 const socialLinks = [
   { icon: Github, href: "https://github.com/PHDevTechSolutions/", label: "GitHub" },
   { icon: Linkedin, href: "https://www.linkedin.com/in/liesther-roluna-378a522b5/", label: "LinkedIn" },
-{ icon: Briefcase, href: "https://www.behance.net/liestherroluna13", label: "Behance" }
+  { icon: Briefcase, href: "https://www.behance.net/liestherroluna13", label: "Behance" }
 ];
+
+// Resume Data
+const resumeData = {
+  name: "Liesther Roluna (Leroux Y Xchire)",
+  title: "Senior Full Stack Developer & CEO",
+  company: "PHDevtech Solutions",
+  email: "sieghartleroux13@gmail.com",
+  phone: "0938-388-2697",
+  location: "San Bartolome, Quirino Highway, Novaliches, Quezon City",
+  summary: "Full-stack developer with 7+ years of experience building innovative systems and websites. CEO of PHDevtech Solutions, leading ERP projects and delivering quality digital solutions. Passionate about modern technologies including React, Next.js, Flutter, and cloud solutions.",
+  skills: [
+    "React / Next.js", "Node.js / Express", "Flutter / React Native", 
+    "PostgreSQL / MongoDB", "Supabase / Firebase", "TailwindCSS / Shadcn",
+    "Docker / AWS", "TypeScript", "REST APIs", "SEO Optimization"
+  ],
+  experience: [
+    {
+      year: "2023 - Present",
+      role: "CEO & Lead Developer",
+      company: "PHDevtech Solutions",
+      description: "Leading a sideline business focused on developing websites and systems. Managing full ERP projects and client relationships."
+    },
+    {
+      year: "2026 - Present",
+      role: "Full Stack Developer",
+      company: "Disruptive Solutions Inc",
+      description: "Developing full ERP systems using Next.js, React, Flutter, and modern programming languages."
+    },
+    {
+      year: "2023 - 2026",
+      role: "Web Developer & SEO Specialist",
+      company: "Ecoshift Corporation",
+      description: "Developed websites using WordPress and Shopify. Worked as an SEO specialist and began system development with PHP, MySQL, React, and Next.js."
+    },
+    {
+      year: "2020 - 2023",
+      role: "Web Developer",
+      company: "RD Pawnshop Inc",
+      description: "Focused on developing websites and systems using Laravel PHP."
+    }
+  ],
+  certifications: [
+    { name: "AWS Certified Solutions Architect", year: "2024" },
+    { name: "Google Cloud Professional", year: "2023" },
+    { name: "MongoDB Certified Developer", year: "2022" }
+  ]
+};
+
+// Project type definitions for dynamic fetching
+interface Project {
+  id?: string;
+  title: string;
+  description: string;
+  tags?: string[];
+  develop: string;
+  assign?: string;
+  shortDescription?: string;
+  fullDescription?: string;
+  features?: string[];
+  technologies?: string[];
+}
+
+// Helper function to convert project to resume format
+function mapProjectToResume(project: any) {
+  const highlights = project.features || 
+    project.tags?.slice(0, 4) || 
+    ["React", "Next.js", "TypeScript", "TailwindCSS"].slice(0, 4);
+  
+  return {
+    name: project.title,
+    description: project.shortDescription || project.description,
+    highlights: highlights
+  };
+}
 
 const services = [
   {
@@ -225,6 +307,25 @@ const features = [
 ];
 
 export default function HeroBlock() {
+  const [projects, setProjects] = useState<{ systems: any[]; websites: any[]; mobile: any[] }>({
+    systems: [],
+    websites: [],
+    mobile: []
+  });
+  const [projectsLoading, setProjectsLoading] = useState(false);
+
+  // Calculate dynamic stats
+  const calculateYearsExperience = () => {
+    const startYear = 2020;
+    const currentYear = new Date().getFullYear();
+    return currentYear - startYear;
+  };
+
+  const dynamicStats = [
+    { label: "Years Experience", value: `${calculateYearsExperience()}+` },
+    { label: "ERP Projects", value: `${projects.systems.length}+` },
+    { label: "Total Projects", value: `${projects.systems.length + projects.websites.length + projects.mobile.length}` },
+  ];
   const [formData, setFormData] = useState({
     fullName: "",
     company: "",
@@ -294,19 +395,359 @@ export default function HeroBlock() {
 
   const shouldReduceMotion = useReducedMotion();
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setProjectsLoading(true);
+        const [systemsData, websitesData, mobileData] = await Promise.all([
+          getProjectsByType("system"),
+          getProjectsByType("website"),
+          getProjectsByType("mobile")
+        ]);
+        
+        setProjects({
+          systems: systemsData,
+          websites: websitesData,
+          mobile: mobileData
+        });
+      } catch (error) {
+        console.error("Failed to fetch projects for resume:", error);
+      } finally {
+        setProjectsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   return (
     <>
       <section className="relative min-h-screen w-full overflow-hidden bg-neutral-950 text-neutral-100">
         {/* Dark grid background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:28px_28px]" />
 
-        {/* 🔗 TOP-RIGHT SOCIAL MENU */}
+        {/* 🔗 TOP-RIGHT MENU - Social Links + Resume Download */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.4 }}
           className="fixed top-4 right-4 z-20 flex flex-row gap-3 md:flex-col"
         >
+          {/* Download Resume Button */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <motion.button
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex h-10 w-auto px-4 md:h-12 md:px-5 items-center justify-center gap-2 rounded-full bg-white text-black shadow-lg transition-all hover:bg-neutral-200 font-medium text-xs md:text-sm"
+              >
+                <Download className="h-4 w-4 md:h-5 md:w-5" />
+                <span className="hidden sm:inline">Download Resume</span>
+                <span className="sm:hidden">Resume</span>
+              </motion.button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white text-black">
+              <DialogHeader className="flex flex-row items-center justify-between">
+                <DialogTitle className="text-2xl font-bold">Resume Preview</DialogTitle>
+              </DialogHeader>
+              
+              {/* Resume Preview Content */}
+              <div id="resume-content" className="bg-white p-8 text-black">
+                {/* Header */}
+                <div className="border-b-2 border-black pb-6 mb-6">
+                  <h1 className="text-3xl font-bold mb-2">{resumeData.name}</h1>
+                  <p className="text-xl text-gray-700 mb-3">{resumeData.title}</p>
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <Mail className="h-4 w-4" /> {resumeData.email}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Phone className="h-4 w-4" /> {resumeData.phone}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" /> {resumeData.location}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold border-b border-gray-300 pb-1 mb-3 flex items-center gap-2">
+                    <User className="h-5 w-5" /> Professional Summary
+                  </h2>
+                  <p className="text-gray-700 leading-relaxed">{resumeData.summary}</p>
+                </div>
+
+                {/* Skills */}
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold border-b border-gray-300 pb-1 mb-3 flex items-center gap-2">
+                    <Code className="h-5 w-5" /> Technical Skills
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    {resumeData.skills.map((skill, idx) => (
+                      <span key={idx} className="bg-gray-100 px-3 py-1 rounded-full text-sm">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Experience */}
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold border-b border-gray-300 pb-1 mb-3 flex items-center gap-2">
+                    <Building2 className="h-5 w-5" /> Work Experience
+                  </h2>
+                  <div className="space-y-4">
+                    {resumeData.experience.map((exp, idx) => (
+                      <div key={idx} className="border-l-2 border-gray-300 pl-4">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold">{exp.role}</h3>
+                          <span className="text-sm text-gray-600">{exp.year}</span>
+                        </div>
+                        <p className="text-gray-700 font-medium">{exp.company}</p>
+                        <p className="text-sm text-gray-600 mt-1">{exp.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Certifications */}
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold border-b border-gray-300 pb-1 mb-3 flex items-center gap-2">
+                    <Award className="h-5 w-5" /> Certifications
+                  </h2>
+                  <ul className="space-y-2">
+                    {resumeData.certifications.map((cert, idx) => (
+                      <li key={idx} className="flex justify-between">
+                        <span>{cert.name}</span>
+                        <span className="text-gray-600">{cert.year}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Projects - Dynamic from Firebase */}
+                <div className="mb-6">
+                  <h2 className="text-lg font-bold border-b border-gray-300 pb-1 mb-3 flex items-center gap-2">
+                    <Rocket className="h-5 w-5" /> Projects
+                    {projectsLoading && <span className="text-xs text-gray-400 font-normal">(Loading...)</span>}
+                  </h2>
+                  
+                  {/* Systems */}
+                  {projects.systems.length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-gray-800 mb-2">Systems Development</h3>
+                      <div className="space-y-3">
+                        {projects.systems.map((project, idx) => (
+                          <div key={project.id || idx} className="border-l-2 border-gray-300 pl-3">
+                            <h4 className="font-medium text-gray-800">{project.title}</h4>
+                            <p className="text-sm text-gray-600">{project.shortDescription || project.description}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {(project.features || project.tags?.slice(0, 4) || []).map((highlight: string, hIdx: number) => (
+                                <span key={hIdx} className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                                  {highlight}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Websites */}
+                  {projects.websites.length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-gray-800 mb-2">Website Development</h3>
+                      <div className="space-y-3">
+                        {projects.websites.map((project, idx) => (
+                          <div key={project.id || idx} className="border-l-2 border-gray-300 pl-3">
+                            <h4 className="font-medium text-gray-800">{project.title}</h4>
+                            <p className="text-sm text-gray-600">{project.shortDescription || project.description}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {(project.features || project.tags?.slice(0, 4) || []).map((highlight: string, hIdx: number) => (
+                                <span key={hIdx} className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                                  {highlight}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mobile Apps */}
+                  {projects.mobile.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-2">Mobile Applications</h3>
+                      <div className="space-y-3">
+                        {projects.mobile.map((project, idx) => (
+                          <div key={project.id || idx} className="border-l-2 border-gray-300 pl-3">
+                            <h4 className="font-medium text-gray-800">{project.title}</h4>
+                            <p className="text-sm text-gray-600">{project.shortDescription || project.description}</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {(project.features || project.tags?.slice(0, 4) || []).map((highlight: string, hIdx: number) => (
+                                <span key={hIdx} className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                                  {highlight}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Stats - Dynamic */}
+                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-300">
+                  {dynamicStats.map((stat, idx) => (
+                    <div key={idx} className="text-center">
+                      <p className="text-2xl font-bold">{stat.value}</p>
+                      <p className="text-sm text-gray-600">{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Download Button */}
+              <div className="flex justify-center pt-4 border-t">
+                <Button
+                  onClick={() => {
+                    // Create a printable version
+                    const printWindow = window.open('', '_blank');
+                    if (printWindow) {
+                      const resumeContent = document.getElementById('resume-content');
+                      
+                      // Generate QR code as base64 using a reliable API
+                      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent('https://my-portfolio-seven-rust-91.vercel.app/')}`;
+                      
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>Resume - ${resumeData.name}</title>
+                            <style>
+                              @page { size: A4; margin: 15mm; }
+                              * { box-sizing: border-box; }
+                              body { 
+                                font-family: 'Segoe UI', Arial, sans-serif; 
+                                font-size: 10pt; 
+                                line-height: 1.4; 
+                                color: #333;
+                                max-width: 180mm;
+                                margin: 0 auto;
+                              }
+                              h1 { font-size: 18pt; margin: 0 0 4px 0; font-weight: 700; color: #000; }
+                              h2 { 
+                                font-size: 11pt; 
+                                border-bottom: 1px solid #333; 
+                                padding-bottom: 3px; 
+                                margin: 12px 0 8px 0;
+                                font-weight: 600;
+                                color: #000;
+                              }
+                              h3 { font-size: 10pt; margin: 8px 0 4px 0; font-weight: 600; color: #222; }
+                              h4 { font-size: 10pt; margin: 4px 0 2px 0; font-weight: 600; }
+                              p { margin: 2px 0; }
+                              .flex { display: flex; }
+                              .flex-wrap { flex-wrap: wrap; }
+                              .gap-1 { gap: 4px; }
+                              .gap-2 { gap: 6px; }
+                              .gap-4 { gap: 12px; }
+                              .text-xs { font-size: 8pt; }
+                              .text-sm { font-size: 9pt; }
+                              .text-gray-600 { color: #555; }
+                              .text-gray-700 { color: #333; }
+                              .bg-gray-100 { background: #f0f0f0; padding: 2px 8px; border-radius: 3px; font-size: 8pt; }
+                              .rounded-full { border-radius: 9999px; }
+                              .px-2 { padding-left: 8px; padding-right: 8px; }
+                              .py-0\.5 { padding-top: 2px; padding-bottom: 2px; }
+                              .border-b { border-bottom: 1px solid #ddd; }
+                              .border-b-2 { border-bottom: 1.5px solid #000; }
+                              .border-l-2 { border-left: 2px solid #999; }
+                              .pl-3 { padding-left: 10px; }
+                              .pl-4 { padding-left: 12px; }
+                              .pb-1 { padding-bottom: 2px; }
+                              .pb-2 { padding-bottom: 6px; }
+                              .pb-4 { padding-bottom: 12px; }
+                              .pt-1 { padding-top: 2px; }
+                              .pt-2 { padding-top: 6px; }
+                              .pt-4 { padding-top: 12px; }
+                              .mb-2 { margin-bottom: 6px; }
+                              .mb-3 { margin-bottom: 8px; }
+                              .mb-4 { margin-bottom: 12px; }
+                              .mb-6 { margin-bottom: 16px; }
+                              .mt-1 { margin-top: 2px; }
+                              .space-y-1 > * + * { margin-top: 4px; }
+                              .space-y-2 > * + * { margin-top: 6px; }
+                              .space-y-3 > * + * { margin-top: 8px; }
+                              .grid { display: grid; }
+                              .grid-cols-3 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+                              .text-center { text-align: center; }
+                              .font-bold { font-weight: 700; }
+                              .font-semibold { font-weight: 600; }
+                              .font-medium { font-weight: 500; }
+                              .leading-relaxed { line-height: 1.5; }
+                              .leading-tight { line-height: 1.3; }
+                              .justify-between { justify-content: space-between; }
+                              .items-start { align-items: flex-start; }
+                              .items-center { align-items: center; }
+                              .flex-col { flex-direction: column; }
+                              .flex-row { flex-direction: row; }
+                              .inline-flex { display: inline-flex; }
+                              .items-center { align-items: center; }
+                              .gap-1 { gap: 4px; }
+                              .w-full { width: 100%; }
+                              ul { margin: 4px 0; padding-left: 0; list-style: none; }
+                              li { margin: 3px 0; }
+                              .text-xl { font-size: 14pt; }
+                              .text-2xl { font-size: 16pt; }
+                              .text-3xl { font-size: 18pt; }
+                              /* Small icons for print */
+                              svg { width: 12px !important; height: 12px !important; }
+                              .h-4, .h-5, .w-4, .w-5 { width: 12px !important; height: 12px !important; }
+                            </style>
+                          </head>
+                          <body>
+                            ${resumeContent?.innerHTML || ''}
+                            
+                            <!-- Footer with QR Code -->
+                            <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; font-size: 8pt; color: #666;">
+                              <div>
+                                <p style="margin: 0; font-weight: 500;">Generated from Portfolio System</p>
+                                <p style="margin: 2px 0 0 0; font-size: 7pt; color: #999;">PHDevtech Solutions &copy; ${new Date().getFullYear()}</p>
+                              </div>
+                              <div style="text-align: center;">
+                                <img id="qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://my-portfolio-seven-rust-91.vercel.app/" 
+                                     alt="Portfolio QR Code" 
+                                     style="width: 60px; height: 60px; display: block;" 
+                                     onload="if(window.printReady) window.print();" />
+                                <p style="margin: 2px 0 0 0; font-size: 6pt; color: #999;">Scan to visit</p>
+                              </div>
+                            </div>
+                            <script>
+                              window.printReady = true;
+                              var img = document.getElementById('qr-code');
+                              if(img && img.complete) { window.print(); }
+                            </script>
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                      // Print will be triggered by JavaScript after QR code loads
+                      toast.success("Resume opened for printing/PDF download!");
+                    }
+                  }}
+                  className="gap-2 bg-black text-white hover:bg-gray-800"
+                >
+                  <Download className="h-4 w-4" />
+                  Print / Save as PDF
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {socialLinks.map((item, index) => (
             <motion.a
               key={index}
